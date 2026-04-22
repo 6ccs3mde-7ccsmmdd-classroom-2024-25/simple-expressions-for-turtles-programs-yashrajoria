@@ -59,7 +59,7 @@ Multiplication returns IntExpression:
 
 Primary returns IntExpression:
     {IntLiteral} val=INT |
-    {VarRef} var=[VariableDeclaration] |
+    {VarRef} var=[VariableDeclaration|ID] |
     "(" IntExpression ")"
 ;
 
