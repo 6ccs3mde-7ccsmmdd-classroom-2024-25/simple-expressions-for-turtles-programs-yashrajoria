@@ -2,51 +2,71 @@ grammar uk.ac.kcl.inf.mdd2.Turtles with org.eclipse.xtext.common.Terminals
 
 generate turtles "http://www.ac.uk/kcl/inf/mdd2/Turtles"
 
-
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
 TurtleProgram:
-	statements += Statement*
+    statements += Statement*
 ;
-	
+
 Statement:
-	MoveStatement |
-	TurnStatement |
-	LoopStatement |
-	VariableDeclaration
+    MoveStatement |
+    TurnStatement |
+    LoopStatement |
+    VariableDeclaration
 ;
 
 VariableDeclaration:
-	"var" name=ID "=" value=INT
+    "var" name=ID "=" value=IntExpression
 ;
 
 LoopStatement:
-	count = IntExpression "times" "do"
-	  statements += Statement+
-	"end"
+    count=IntExpression "times" "do"
+        statements += Statement+
+    "end"
 ;
 
 MoveStatement:
-	command = MoveCommand "(" steps = IntExpression ")"
+    command=MoveCommand "(" steps=IntExpression ")"
 ;
 
 enum MoveCommand:
-	forward | backward
+    forward | backward
 ;
 
 TurnStatement:
-	"turn" command = TurnCommand "by" degrees = REALL "degrees"
+    "turn" command=TurnCommand "by" degrees=REALL "degrees"
 ;
 
 enum TurnCommand:
-	left | right
+    left | right
 ;
+
+//////////////////////////////////////
+// EXPRESSIONS (WITH PRECEDENCE)
+//////////////////////////////////////
 
 IntExpression:
-	val = INT |
-	var = [VariableDeclaration]
+    Addition
 ;
 
+Addition returns IntExpression:
+    Multiplication ({Addition.left=current} "+" right=Multiplication)*
+;
+
+Multiplication returns IntExpression:
+    Primary ({Multiplication.left=current} "*" right=Primary)*
+;
+
+Primary returns IntExpression:
+    {IntLiteral} val=INT |
+    {VarRef} var=[VariableDeclaration] |
+    "(" IntExpression ")"
+;
+
+//////////////////////////////////////
+// FLOAT SUPPORT
+//////////////////////////////////////
+
 REALL returns ecore::EFloat hidden():
-	INT? "." INT
-; 
+    INT? "." INT
+;
